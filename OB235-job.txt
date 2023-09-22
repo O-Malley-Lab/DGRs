@@ -1,0 +1,29 @@
+#!/bin/bash -l
+#SBATCH --nodes=1 --ntasks-per-node=12
+#SBATCH --time=4:00:00
+cd $SLURM_SUBMIT_DIR
+
+conda activate py38
+date
+
+bbmap.sh ref=ButspOB235_FD-scaff47.fasta
+
+for forward in ./*_L001_R1_001.fastq.gz; do
+bbmap.sh in=${forward} out=${forward/%_L001_R1_001.fastq.gz/for.sam} vslow minid=0 indelfilter=2 inslenfilter=3 dellenfilter=3 nodisk
+done
+
+for reverse in ./*_L001_R2_001.fastq.gz; do
+bbmap.sh in=${reverse} out=${reverse/%_L001_R2_001.fastq.gz/rev.sam} vslow minid=0 indelfilter=2 inslenfilter=3 dellenfilter=3 nodisk
+done
+
+for filename in ./*.sam; do 
+samtools sort -O bam -o ${filename/%.sam/.sorted.bam} ${filename}
+samtools index ${filename/%.sam/.sorted.bam}
+samtools mpileup -a --max-depth 0 --fasta-ref ButspOB235_FD-scaff47.fasta ${filename/%.sam/.sorted.bam} > ${filename/%.sam/-mpile3.tab}
+done
+
+for filename in ./*-mpile3.tab; do 
+python /home/eisenberg/seq/calc_pi_from_pileup_v1.py -c 5 -r OB235-position.txt -i ${filename} -o ${filename/%-mpile3.tab/-pi.tab}
+done
+
+date
