@@ -1,0 +1,3 @@
+#Target_ID	VR_number	VR_ID	Target start	Target end	VR start	VR end
+DGR1_yeVR	yeVR	DGR1_yeVR	46315	47445	46326	46422
+DGR1_noVR	noVR	DGR1_noVR	46315	47445	46431	46527
